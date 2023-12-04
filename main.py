@@ -48,7 +48,7 @@ while True:
         with CONSOLE.status("[green]Exploring the file structure..."):
             if os.path.isfile(path):
                 full_size = os.path.getsize(path)
-                structure = {path: full_size}
+                structure = {path: {"size": full_size, "content": None}}
             else:
                 structure, full_size = get_all_files_of_directory(path)
             
