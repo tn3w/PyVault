@@ -13,7 +13,7 @@ CONSOLE = Console()
 
 while True:
     mission = None
-    options = ["Encrypt file / folder", "Restore data from file", "Secure deletion of files / folders", "Exit"]
+    options = ["Encrypt file / folder", "Restore data from file", "Secure deletion of files or folders", "Exit"]
     selected_option = 0
 
     while True:
@@ -42,7 +42,7 @@ while True:
     if mission == 0:
         clear_console()
 
-        path = input("Enter the file / folder path: ")
+        path = input("Enter the file or folder path: ")
         print("")
 
         with CONSOLE.status("[green]Exploring the file structure..."):
