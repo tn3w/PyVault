@@ -120,7 +120,7 @@ while True:
                         input("Enter: ") # FIXME: Decision on further procedure
                         continue
                     elif not is_password_safe(inputed_password):
-                        CONSOLE.print("[red][Error]The given password is not strong enough")
+                        CONSOLE.print("[red][Error]Your password exists in a data leak, it is not secure")
                         input("Enter: ") # FIXME: Decision on further procedure
                         continue
                     else:
