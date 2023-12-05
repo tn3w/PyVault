@@ -10,6 +10,7 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import padding as symmetric_padding
+import base64
 from cryptography.hazmat.primitives.asymmetric import rsa, padding as asymmetric_padding
 
 LOGO = """
@@ -243,12 +244,14 @@ class AsymmetricEncryption:
         self.public_key, self.private_key = public_key, private_key
 
         if not public_key is None:
-            self.publ_key = serialization.load_der_public_key(public_key.encode('latin-1'), backend=default_backend())
+            public_key_bytes = base64.b64decode(public_key.encode('utf-8'))
+            self.publ_key = serialization.load_der_public_key(public_key_bytes, backend=default_backend())
         else:
             self.publ_key = None
 
         if not private_key is None:
-            self.priv_key = serialization.load_der_private_key(private_key.encode('latin-1'), password=None, backend=default_backend())
+            private_key_bytes = base64.b64decode(private_key.encode('utf-8'))
+            self.priv_key = serialization.load_der_private_key(private_key_bytes, password=None, backend=default_backend())
         else:
             self.priv_key = None
 
@@ -265,18 +268,20 @@ class AsymmetricEncryption:
                 key_size=key_size,
                 backend=default_backend()
             )
-            self.private_key = self.priv_key.private_bytes(
+            private_key_bytes = self.priv_key.private_bytes(
                 encoding=serialization.Encoding.DER,
                 format=serialization.PrivateFormat.PKCS8,
                 encryption_algorithm=serialization.NoEncryption()
-            ).decode('latin-1')
+            )
+            self.private_key = base64.b64encode(private_key_bytes).decode('utf-8')
         
         if self.publ_key is None:
             self.publ_key = self.priv_key.public_key()
-            self.public_key = self.publ_key.public_bytes(
+            public_key_bytes = self.publ_key.public_bytes(
                 encoding=serialization.Encoding.DER,
                 format=serialization.PublicFormat.SubjectPublicKeyInfo
-            ).decode('latin-1')
+            )
+            self.public_key = base64.b64encode(public_key_bytes).decode('utf-8')
 
         return self
 
@@ -334,3 +339,28 @@ class AsymmetricEncryption:
         plain_text = SymmetricEncryption(symmetric_key).decrypt(salt, iv, cipher_data)
 
         return plain_text
+
+def directory_load_publ_key_files(directory_path: str) -> dict:
+    """
+    Function to get all public keys that are stored in a dict as a file (not recursive)
+
+    :param directory_path: Path to directory  
+    """
+    
+    key_files = {}
+
+    for file_or_directory in os.listdir(directory_path):
+        full_path = os.path.join(directory_path, file_or_directory)
+
+        if os.path.isfile(full_path):
+            if file_or_directory.endswith(("-priv.key", "-publ.key")):
+                file_id = file_or_directory.replace("-priv.key", "").replace("-publ.key", "")
+                is_private_key = file_or_directory.endswith("-priv.key")
+
+                with open(full_path, "r") as readable_file:
+                    key = readable_file.read()
+
+                file_public_key = AsymmetricEncryption(private_key=key).generate_keys().public_key if is_private_key else key
+                key_files[file_id] = file_public_key
+    
+    return key_files
