@@ -4,6 +4,11 @@ import secrets
 import re
 import hashlib
 from urllib import request, error
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives import padding as symmetric_padding
 
 LOGO = """
 ░█▀▀░█▀█░█▀▀░█▀▀░█▀█░█░█░█░█░█▀█░█░█░█░░░▀█▀
@@ -124,3 +129,57 @@ def is_password_safe(password: str) -> bool:
         pass  # FIXME: Error Handling
 
     return True
+
+class SymmetricEncryption:
+    "Implementation of symmetric encryption with AES"
+
+    def __init__(self, password: str, salt_length: int = 32):
+        """
+        :param password: A secure encryption password, should be at least 32 characters long
+        :param salt_length: The length of the salt, should be at least 16
+        """
+
+        self.password = password.encode()
+        self.salt_length = salt_length
+
+    def encrypt(self, plain_data: bytes):
+        salt = secrets.token_bytes(self.salt_length)
+
+        kdf_ = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=salt,
+            iterations=100000,
+            backend=default_backend()
+        )
+        key = kdf_.derive(self.password)
+
+        iv = secrets.token_bytes(16)
+
+        cipher = Cipher(algorithms.AES(key), modes.CBC(iv),
+                        backend=default_backend())
+        encryptor = cipher.encryptor()
+        padder = symmetric_padding.PKCS7(algorithms.AES.block_size).padder()
+        padded_data = padder.update(plain_data) + padder.finalize()
+        cipher_data = encryptor.update(padded_data) + encryptor.finalize()
+
+        return (salt + iv + cipher_data)
+
+    def decrypt(self, salt, iv, cipher_data) -> str:
+        kdf_ = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=salt,
+            iterations=100000,
+            backend=default_backend()
+        )
+        key = kdf_.derive(self.password)
+
+        cipher = Cipher(algorithms.AES(key), modes.CBC(iv),
+                        backend=default_backend())
+        decryptor = cipher.decryptor()
+        unpadder = symmetric_padding.PKCS7(algorithms.AES.block_size).unpadder()
+        decrypted_data = decryptor.update(cipher_data) + decryptor.finalize()
+        plain_data = unpadder.update(decrypted_data) + unpadder.finalize()
+
+        return plain_data
