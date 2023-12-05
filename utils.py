@@ -156,8 +156,7 @@ class SymmetricEncryption:
 
         iv = secrets.token_bytes(16)
 
-        cipher = Cipher(algorithms.AES(key), modes.CBC(iv),
-                        backend=default_backend())
+        cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
         encryptor = cipher.encryptor()
         padder = symmetric_padding.PKCS7(algorithms.AES.block_size).padder()
         padded_data = padder.update(plain_data) + padder.finalize()
@@ -175,8 +174,7 @@ class SymmetricEncryption:
         )
         key = kdf_.derive(self.password)
 
-        cipher = Cipher(algorithms.AES(key), modes.CBC(iv),
-                        backend=default_backend())
+        cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
         decryptor = cipher.decryptor()
         unpadder = symmetric_padding.PKCS7(algorithms.AES.block_size).unpadder()
         decrypted_data = decryptor.update(cipher_data) + decryptor.finalize()
