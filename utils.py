@@ -342,7 +342,7 @@ class AsymmetricEncryption:
 
 def directory_load_keys(directory_path: str) -> Tuple[dict, dict]:
     """
-    Function to get all public keys that are stored in a dict as a file (not recursive)
+    Function to get all keys (public and private) that are stored in a dict as a file (not recursive)
 
     :param directory_path: Path to directory  
     """
@@ -374,6 +374,11 @@ def directory_load_keys(directory_path: str) -> Tuple[dict, dict]:
     return publ_key_files, priv_key_files
 
 def directory_load_key_files(directory_path: str) -> dict:
+    """
+    Function for retrieving all key files that are saved as a file in a dict (not recursive)
+
+    :param directory_path: Path to directory
+    """
 
     key_files = {}
 
