@@ -4,7 +4,7 @@ if __name__ != "__main__":
     exit(1)
 
 from utils import clear_console, get_all_files_of_directory, compress_structure, generate_random_string, get_password_strength,\
-                  is_password_safe, directory_load_publ_key_files, AsymmetricEncryption
+                  is_password_safe, directory_load_keys, AsymmetricEncryption
 import os
 from rich.console import Console
 from getpass import getpass
@@ -138,7 +138,7 @@ while True:
 
         if mission in [1, 2]:
             with CONSOLE.status("[green]Searching and loading key files..."):
-                key_files = directory_load_publ_key_files(CURRENT_DIR_PATH)
+                key_files, _ = directory_load_keys(CURRENT_DIR_PATH)
 
             if not len(key_files) == 0:
                 mission = None
@@ -206,7 +206,7 @@ while True:
                         break
                     elif os.path.isdir(inputed_public_key_path):
                         with CONSOLE.status("[green]Searching and loading key files..."):
-                            key_files = directory_load_publ_key_files(inputed_public_key_path)
+                            key_files, _ = directory_load_keys(inputed_public_key_path)
                         
                         if len(key_files) == 0:
                             CONSOLE.print("[red][Error] No public or private keys were found")
@@ -248,6 +248,36 @@ while True:
                         input("Enter: ")
                             
                     if not public_key is None:
-                        break                
+                        break
+        
+        key_file = None
+
+        mission = None
+        options = ["No", "Yes"]
+        selected_option = 0
+        while True:
+            clear_console()
+            print(f"Enter the file or folder path: {path}\n")
+            CONSOLE.print("[green]~ Exploring the file structure... Done")
+            CONSOLE.print("[green]~ Compression of all files... Done")
+            print("\nUsing", encryption_method)
+            CONSOLE.print("[green]~ Encryption credentials added")
+
+            for i, option in enumerate(options):
+                if i == selected_option:
+                    print(f"[>] {option}")
+                else:
+                    print(f"[ ] {option}")
+            
+            key = input("\nChoose whether you want to use a key file (c to confirm): ")
+
+            if not key.lower() in ["c", "confirm"]:
+                if len(options) < selected_option + 2:
+                    selected_option = 0
+                else:
+                    selected_option += 1
+            else:
+                mission = selected_option
+                break
                                 
         continue

@@ -340,14 +340,15 @@ class AsymmetricEncryption:
 
         return plain_text
 
-def directory_load_publ_key_files(directory_path: str) -> dict:
+def directory_load_keys(directory_path: str) -> Tuple[dict, dict]:
     """
     Function to get all public keys that are stored in a dict as a file (not recursive)
 
     :param directory_path: Path to directory  
     """
     
-    key_files = {}
+    publ_key_files = {}
+    priv_key_files = {}
 
     for file_or_directory in os.listdir(directory_path):
         full_path = os.path.join(directory_path, file_or_directory)
@@ -360,7 +361,32 @@ def directory_load_publ_key_files(directory_path: str) -> dict:
                 with open(full_path, "r") as readable_file:
                     key = readable_file.read()
 
-                file_public_key = AsymmetricEncryption(private_key=key).generate_keys().public_key if is_private_key else key
-                key_files[file_id] = file_public_key
+                try:
+                    file_public_key = AsymmetricEncryption(private_key=key).generate_keys().public_key if is_private_key else key
+                except:
+                    continue # FIXME: Error Handling
+
+                publ_key_files[file_id] = file_public_key
+
+                if is_private_key:
+                    priv_key_files[file_id] = key
+    
+    return publ_key_files, priv_key_files
+
+def directory_load_key_files(directory_path: str) -> dict:
+
+    key_files = {}
+
+    for file_or_directory in os.listdir(directory_path):
+        full_path = os.path.join(directory_path, file_or_directory)
+
+        if os.path.isfile(full_path):
+            if file_or_directory.endswith(".keyfile"):
+                file_id = file_or_directory.replace(".keyfile", "")
+
+                with open(full_path, "r") as readable_file:
+                    key = readable_file.read()
+
+                key_files[file_id] = key
     
     return key_files
