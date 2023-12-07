@@ -181,7 +181,7 @@ while True:
 
                     inputed_public_key_path = input("Please enter the path to the folder / public key file: ")
                     if inputed_public_key_path == "":
-                        print("")
+                        clear_console()
                         with CONSOLE.status("[green]Generate a private and public key pair..."):
                             asymmetricencryption = AsymmetricEncryption().generate_keys()
                             public_key, private_key = asymmetricencryption.public_key, asymmetricencryption.private_key
@@ -260,8 +260,8 @@ while True:
             print(f"Enter the file or folder path: {path}\n")
             CONSOLE.print("[green]~ Exploring the file structure... Done")
             CONSOLE.print("[green]~ Compression of all files... Done")
-            print("\nUsing", encryption_method)
             CONSOLE.print("[green]~ Encryption credentials added")
+            print("")
 
             for i, option in enumerate(options):
                 if i == selected_option:
