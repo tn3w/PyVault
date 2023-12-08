@@ -1,2 +1,4 @@
-# SafePyVault
-SafePyVault is a versatile Python tool designed to encrypt and decrypt file structures with the added security of password protection. This project empowers users to safeguard their sensitive data by transforming files into a secure, unreadable format and restoring them to their original state when needed.
+<p align="center"><a rel="noreferrer noopener" href="http://tn3wtor4vgnrimugptubpaqsf2gc4pcsktknkxt74w7p5yzbt7rwrkid.onion/projects/PyVault"><img alt="Backup 1" src="https://img.shields.io/badge/Backup%201-141e24.svg?&style=for-the-badge&logo=torproject&logoColor=white"></a>  <a rel="noreferrer noopener" href="http://tn3wvjimrn3hydx4u52kzfnkgu6kffef2js27ewlhdf5htulno34vqad.onion/projects/PyVault"><img alt="Backup 2" src="https://img.shields.io/badge/Backup%202-141e24.svg?&style=for-the-badge&logo=torproject&logoColor=white"></a>  <a rel="noreferrer noopener" href="http://tn3wtor7cfz3epmuetrhkj3mangjxqpd47lxxicfwwdwja6dwq6dbdad.onion/projects/PyVault"><img alt="Backup 3" src="https://img.shields.io/badge/Backup%203-141e24.svg?&style=for-the-badge&logo=torproject&logoColor=white"></a>
+
+# PyVault
+PyVault is a versatile Python tool for secure file operations, including encryption, decryption, password protection, public/private key encryption, keyfile usage, secure data deletion, and signature creation and verification.
