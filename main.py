@@ -4,7 +4,7 @@ if __name__ != "__main__":
     exit(1)
 
 from utils import clear_console, get_all_files_of_directory, compress_structure, generate_random_string, get_password_strength,\
-                  is_password_safe, directory_load_keys, AsymmetricEncryption
+                  is_password_safe, directory_load_keys, AsymmetricEncryption, directory_load_key_files
 import os
 from rich.console import Console
 from getpass import getpass
@@ -137,12 +137,12 @@ while True:
                             break
 
         if mission in [1, 2]:
-            with CONSOLE.status("[green]Searching and loading key files..."):
-                key_files, _ = directory_load_keys(CURRENT_DIR_PATH)
+            with CONSOLE.status("[green]Searching and loading public keys..."):
+                publ_keys, _ = directory_load_keys(CURRENT_DIR_PATH)
 
-            if not len(key_files) == 0:
+            if not len(publ_keys) == 0:
                 mission = None
-                options = [key_id + " (Public Key)" for key_id in key_files.keys()]
+                options = [key_id + " (Public Key)" for key_id in publ_keys.keys()]
                 options.append("Enter own path")
                 selected_option = 0
 
@@ -168,7 +168,7 @@ while True:
                             selected_option += 1
                     else:
                         if not len(options) == selected_option + 1:
-                            public_key = list(key_files.values())[selected_option]
+                            public_key = list(publ_keys.values())[selected_option]
                         break
                 
             if public_key is None:
@@ -202,20 +202,20 @@ while True:
                         break
                     elif os.path.isfile(inputed_public_key_path):
                         with open(inputed_public_key_path, "r") as readable_file:
-                            public_key = readable_file.read()
+                            public_key = readable_file.read() # FIXME: Validating Public key
                         break
                     elif os.path.isdir(inputed_public_key_path):
-                        with CONSOLE.status("[green]Searching and loading key files..."):
-                            key_files, _ = directory_load_keys(inputed_public_key_path)
+                        with CONSOLE.status("[green]Searching and loading public keys..."):
+                            publ_keys, _ = directory_load_keys(inputed_public_key_path)
                         
-                        if len(key_files) == 0:
+                        if len(publ_keys) == 0:
                             CONSOLE.print("[red][Error] No public or private keys were found")
                             input("Enter: ")
-                        elif len(key_files) == 1:
-                            public_key = key_files.values()[0]
+                        elif len(publ_keys) == 1:
+                            public_key = list(publ_keys.values())[0]
                         else:
                             mission = None
-                            options = [key_id + " (Public Key)" for key_id in key_files.keys()]
+                            options = [key_id + " (Public Key)" for key_id in publ_keys.keys()]
                             options.append("Back")
                             selected_option = 0
 
@@ -241,7 +241,7 @@ while True:
                                         selected_option += 1
                                 else:
                                     if not len(options) == selected_option + 1:
-                                        public_key = key_files.values()[selected_option]
+                                        public_key = publ_keys.values()[selected_option]
                                     break
                     else:
                         CONSOLE.print("[red][Error] The given path does not exist")
@@ -279,5 +279,119 @@ while True:
             else:
                 mission = selected_option
                 break
+        
+        if mission == 1:
+            with CONSOLE.status("[green]Searching and loading key files..."):
+                key_files = directory_load_key_files(CURRENT_DIR_PATH)
+            
+            if not len(key_files) == 0:
+                mission = None
+                options = [key_file_id + " (Keyfile)" for key_file_id in key_files.keys()]
+                options.append("Enter own path")
+                selected_option = 0
+
+                while True:
+                    clear_console()
+                    print(f"Enter the file or folder path: {path}\n")
+                    CONSOLE.print("[green]~ Exploring the file structure... Done")
+                    CONSOLE.print("[green]~ Compression of all files... Done")
+                    CONSOLE.print("[green]~ Encryption credentials added")
+                    print("")
+
+                    for i, option in enumerate(options):
+                        if i == selected_option:
+                            print(f"[>] {option}")
+                        else:
+                            print(f"[ ] {option}")
+                    
+                    key = input("\nChoose a Key File (c to confirm): ")
+
+                    if not key.lower() in ["c", "confirm"]:
+                        if len(options) < selected_option + 2:
+                            selected_option = 0
+                        else:
+                            selected_option += 1
+                    else:
+                        if not len(options) == selected_option + 1:
+                            key_file = list(key_files.values())[selected_option]
+                        break
+            
+            if key_file is None:
+                while True:
+                    clear_console()
+                    print(f"Enter the file or folder path: {path}\n")
+                    CONSOLE.print("[green]~ Exploring the file structure... Done")
+                    CONSOLE.print("[green]~ Compression of all files... Done")
+                    CONSOLE.print("[green]~ Encryption credentials added")
+                    print("")
+
+                    inputed_key_file_path = input("Please enter the path to the folder / key file: ")
+                    if inputed_key_file_path == "":
+                        clear_console()
+                        with CONSOLE.status("[green]Generating a keyfile..."):
+                            key_file = generate_random_string(120)
+                        CONSOLE.print("[green]~ Generating a keyfile... Done")
+
+                        key_id = input("What would you like to call the key file? ") # FIXME: Further validation of the keyid
+                        if key_id == "":
+                            key_id = generate_random_string(4, with_punctuation=False)
+
+                        key_file_path = os.path.join(CURRENT_DIR_PATH, key_id + ".keyfile")
+
+                        with open(key_file_path, "w") as writeable_file:
+                            writeable_file.write(key_file)
+
+                        break
+                    elif os.path.isfile(inputed_key_file_path):
+                        with open(inputed_key_file_path, "r") as readable_file:
+                            key_file = readable_file.read() # FIXME: Further validating of key_file
+                        break
+                    elif os.path.isdir(inputed_key_file_path):
+                        with CONSOLE.status("[green]Searching and loading key files..."):
+                            key_files = directory_load_key_files(CURRENT_DIR_PATH)
+                        
+                        if len(publ_keys) == 0:
+                            CONSOLE.print("[red][Error] No keyfile found")
+                            input("Enter: ")
+                        elif len(publ_keys) == 1:
+                            key_file = list(publ_keys.values())[0]
+                        else:
+                            mission = None
+                            options = [key_file_id + " (Keyfile)" for key_file_id in publ_keys.keys()]
+                            options.append("Back")
+                            selected_option = 0
+
+                            while True:
+                                clear_console()
+                                print(f"Enter the file or folder path: {path}\n")
+                                CONSOLE.print("[green]~ Exploring the file structure... Done")
+                                CONSOLE.print("[green]~ Compression of all files... Done")
+                                CONSOLE.print("[green]~ Encryption credentials added")
+                                print("")
+
+                                for i, option in enumerate(options):
+                                    if i == selected_option:
+                                        print(f"[>] {option}")
+                                    else:
+                                        print(f"[ ] {option}")
+                                
+                                key = input("\nChoose a Key File (c to confirm): ")
+
+                                if not key.lower() in ["c", "confirm"]:
+                                    if len(options) < selected_option + 2:
+                                        selected_option = 0
+                                    else:
+                                        selected_option += 1
+                                else:
+                                    if not len(options) == selected_option + 1:
+                                        key_file = publ_keys.values()[selected_option]
+                                    break
+                    else:
+                        CONSOLE.print("[red][Error] The given path does not exist")
+                        input("Enter: ")
+                            
+                    if not key_file is None:
+                        break
+
                                 
         continue

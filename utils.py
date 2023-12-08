@@ -362,7 +362,7 @@ def directory_load_keys(directory_path: str) -> Tuple[dict, dict]:
                     key = readable_file.read()
 
                 try:
-                    file_public_key = AsymmetricEncryption(private_key=key).generate_keys().public_key if is_private_key else key
+                    file_public_key = AsymmetricEncryption(private_key=key).generate_keys().public_key if is_private_key else key # FIXME: Validating publ key / loading it
                 except:
                     continue # FIXME: Error Handling
 
