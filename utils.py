@@ -169,13 +169,14 @@ def is_password_safe(password: str) -> bool:
 class SymmetricEncryption:
     "Implementation of symmetric encryption with AES"
 
-    def __init__(self, password: str, salt_length: int = 32):
+    def __init__(self, password: Union[str, bytes], salt_length: int = 32):
         """
         :param password: A secure encryption password, should be at least 32 characters long
         :param salt_length: The length of the salt, should be at least 16
         """
-
-        self.password = password.encode()
+        
+        if isinstance(password, str):
+            self.password = password.encode()
         self.salt_length = salt_length
 
     def encrypt(self, plain_data: bytes) -> Tuple[bytes, bytes, bytes]:
