@@ -176,7 +176,9 @@ class SymmetricEncryption:
         """
         
         if isinstance(password, str):
-            self.password = password.encode()
+            password = password.encode()
+
+        self.password = password
         self.salt_length = salt_length
 
     def encrypt(self, plain_data: bytes) -> Tuple[bytes, bytes, bytes]:
