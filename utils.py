@@ -166,6 +166,32 @@ def is_password_safe(password: str) -> bool:
 
     return True
 
+def compress_dict_or_list(object: Union[dict, list]) -> bytes:
+    """
+    Compiles a json object dict or list to bytes and compresses it
+
+    :param object: The json object, dict or list
+    """
+
+    object_str = json.dumps(object, separators=(',', ':'))
+    compressed_bytes = gzip.compress(object_str.encode('utf-8'))
+    return compressed_bytes
+
+def decompress_bytes_to_dict_or_list(compressed_data: bytes) -> Union[dict, list]:
+    """
+    Decompresses bytes and converts them to a json dictionary or list.
+
+    :param compressed_data: Compressed bytes
+    :return: Decompressed Python dictionary or list
+    """
+
+    decompressed_data = gzip.decompress(compressed_data)
+    decoded_json_str = decompressed_data.decode('utf-8')
+
+    if decoded_json_str.startswith(('{', '[')):
+        return json.loads(decoded_json_str)
+    raise ValueError("Invalid JSON data.")
+
 class SymmetricEncryption:
     "Implementation of symmetric encryption with AES"
 
@@ -181,7 +207,7 @@ class SymmetricEncryption:
         self.password = password
         self.salt_length = salt_length
 
-    def encrypt(self, plain_data: bytes) -> Tuple[bytes, bytes, bytes]:
+    def encrypt(self, plain_data: bytes) -> bytes:
         """
         Encrypts data with the specified password
 
@@ -207,16 +233,17 @@ class SymmetricEncryption:
         padded_data = padder.update(plain_data) + padder.finalize()
         cipher_data = encryptor.update(padded_data) + encryptor.finalize()
 
-        return salt, iv, cipher_data
+        return compress_dict_or_list([salt.hex(), iv.hex(), cipher_data.hex()])
 
-    def decrypt(self, salt: bytes, iv: bytes, cipher_data: bytes) -> bytes:
+    def decrypt(self, compressed_data: bytes) -> bytes:
         """
         Decrypts data with the specified password
 
-        :param salt: The salt used for encryption
-        :param iv: Initialization vector used for encryption
-        :param cipher_data: The encrypted data
+        :param compressed_data: All data required for decryption
         """
+
+        decompressed_data = decompress_bytes_to_dict_or_list(compressed_data)
+        salt, iv, cipher_data = bytes.fromhex(decompressed_data[0]), bytes.fromhex(decompressed_data[1]), bytes.fromhex(decompressed_data[2])
 
         kdf_ = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
@@ -234,7 +261,6 @@ class SymmetricEncryption:
         plain_data = unpadder.update(decrypted_data) + unpadder.finalize()
 
         return plain_data
-
 
 class AsymmetricEncryption:
     "Implementation of secure asymmetric encryption with RSA"
@@ -289,7 +315,7 @@ class AsymmetricEncryption:
 
         return self
 
-    def encrypt(self, plain_data: bytes) -> Tuple[bytes, bytes, bytes, bytes]:
+    def encrypt(self, plain_data: bytes) -> Tuple[bytes]:
         """
         Encrypts data with public key
 
@@ -301,7 +327,7 @@ class AsymmetricEncryption:
 
         symmetric_key = secrets.token_bytes(64)
 
-        salt, iv, cipher_data = SymmetricEncryption(symmetric_key).encrypt(plain_data)
+        symmetric_compressed_data = SymmetricEncryption(symmetric_key).encrypt(plain_data)
 
         cipher_symmetric_key = self.publ_key.encrypt(
             symmetric_key,
@@ -314,17 +340,18 @@ class AsymmetricEncryption:
             )
         )
 
-        return salt, iv, cipher_data, cipher_symmetric_key
+        compressed_data = compress_dict_or_list([symmetric_compressed_data.hex(), cipher_symmetric_key.hex()])
+        return compressed_data
 
-    def decrypt(self, salt, iv, cipher_data, cipher_symmetric_key) -> bytes:
+    def decrypt(self, compressed_data: bytes) -> bytes:
         """
         Decrypts data with private key
 
-        :param salt: The salt used for encryption
-        :param iv: Initialization vector used for encryption
-        :param cipher_data: The encrypted data
-        :param cipher_symmetric_key: The encrypted symmetric key
+        :param compressed_data: All data required for decryption
         """
+
+        decompressed_list = decompress_bytes_to_dict_or_list(compressed_data)
+        symmetric_compressed_data, cipher_symmetric_key = bytes.fromhex(decompressed_list[0]), bytes.fromhex(decompressed_list[1])
 
         if self.priv_key is None:
             raise ValueError("The private key cannot be None in decode, this error occurs because no private key was specified when initializing the AsymmetricCrypto function and none was generated with generate_keys.")
@@ -340,7 +367,7 @@ class AsymmetricEncryption:
             )
         )
 
-        plain_text = SymmetricEncryption(symmetric_key).decrypt(salt, iv, cipher_data)
+        plain_text = SymmetricEncryption(symmetric_key).decrypt(symmetric_compressed_data)
 
         return plain_text
 
@@ -399,29 +426,3 @@ def directory_load_key_files(directory_path: str) -> dict:
                 key_files[file_id] = key
     
     return key_files
-
-def compress_dict_or_list(object: Union[dict, list]) -> bytes:
-    """
-    Compiles a json object dict or list to bytes and compresses it
-
-    :param object: The json object, dict or list
-    """
-
-    object_str = json.dumps(object, separators=(',', ':'))
-    compressed_bytes = gzip.compress(object_str.encode('utf-8'))
-    return compressed_bytes
-
-def decompress_bytes_to_dict_or_list(compressed_data: bytes) -> Union[dict, list]:
-    """
-    Decompresses bytes and converts them to a json dictionary or list.
-
-    :param compressed_data: Compressed bytes
-    :return: Decompressed Python dictionary or list
-    """
-
-    decompressed_data = gzip.decompress(compressed_data)
-    decoded_json_str = decompressed_data.decode('utf-8')
-
-    if decoded_json_str.startswith(('{', '[')):
-        return json.loads(decoded_json_str)
-    raise ValueError("Invalid JSON data.")
