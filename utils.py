@@ -1,5 +1,5 @@
 import os
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Union
 import gzip
 import secrets
 import re
@@ -12,6 +12,7 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import padding as symmetric_padding
 import base64
 from cryptography.hazmat.primitives.asymmetric import rsa, padding as asymmetric_padding
+import json
 
 LOGO = """
 ░█▀█░█░█░█░█░█▀█░█░█░█░░░▀█▀
@@ -395,3 +396,29 @@ def directory_load_key_files(directory_path: str) -> dict:
                 key_files[file_id] = key
     
     return key_files
+
+def compress_dict_or_list(object: Union[dict, list]) -> bytes:
+    """
+    Compiles a json object dict or list to bytes and compresses it
+
+    :param object: The json object, dict or list
+    """
+
+    object_str = json.dumps(object, separators=(',', ':'))
+    compressed_bytes = gzip.compress(object_str.encode('utf-8'))
+    return compressed_bytes
+
+def decompress_bytes_to_dict_or_list(compressed_data: bytes) -> Union[dict, list]:
+    """
+    Decompresses bytes and converts them to a json dictionary or list.
+
+    :param compressed_data: Compressed bytes
+    :return: Decompressed Python dictionary or list
+    """
+
+    decompressed_data = gzip.decompress(compressed_data)
+    decoded_json_str = decompressed_data.decode('utf-8')
+
+    if decoded_json_str.startswith(('{', '[')):
+        return json.loads(decoded_json_str)
+    raise ValueError("Invalid JSON data.")
