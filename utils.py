@@ -1,3 +1,8 @@
+from sys import exit
+
+if __name__ == "__main__":
+    exit(1)
+
 import os
 from typing import Tuple, Optional, Union
 import gzip
