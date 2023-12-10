@@ -435,7 +435,8 @@ def directory_load_key_files(directory_path: str) -> dict:
 class HexEncoding:
     "Implementation of hex encoding"
 
-    def encrypt(self, plain_data: bytes) -> str:
+    @staticmethod
+    def encrypt(plain_data: bytes) -> str:
         """
         Encodes bytes to string
 
@@ -444,7 +445,8 @@ class HexEncoding:
 
         return plain_data.hex()
 
-    def decrypt(self, encoded_data: str) -> bytes:
+    @staticmethod
+    def decrypt(encoded_data: str) -> bytes:
         """
         Decodes bytes to string
 
@@ -468,11 +470,12 @@ def encrypt_structure(structure: dict, encryption: Optional[Union[SymmetricEncry
     new_structure = {}
 
     for file_or_directory, information in structure.items():
-        if information.get("object") is None:
-            new_structure[file_or_directory] = encrypt_structure(information, encryption)
-        else:
-            information["object"] = encryption.encrypt(information["object"])
-            new_structure[file_or_directory] = information
+        if isinstance(information, dict):
+            if information.get("content") is None:
+                new_structure[file_or_directory] = encrypt_structure(information, encryption)
+            else:
+                information["content"] = encryption.encrypt(information["content"])
+                new_structure[file_or_directory] = information
     
     return new_structure
 
@@ -490,10 +493,11 @@ def decrypt_structure(structure: dict, encryption: Optional[Union[SymmetricEncry
     new_structure = {}
 
     for file_or_directory, information in structure.items():
-        if information.get("object") is None:
-            new_structure[file_or_directory] = decrypt_structure(information, encryption)
-        else:
-            information["object"] = encryption.decrypt(information["object"])
-            new_structure[file_or_directory] = information
+        if isinstance(information, dict):
+            if information.get("content") is None:
+                new_structure[file_or_directory] = decrypt_structure(information, encryption)
+            else:
+                information["content"] = encryption.decrypt(information["content"])
+                new_structure[file_or_directory] = information
     
     return new_structure

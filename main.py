@@ -5,7 +5,7 @@ if __name__ != "__main__":
 
 from utils import clear_console, get_all_files_of_directory, compress_structure, generate_random_string, get_password_strength,\
                   is_password_safe, directory_load_keys, AsymmetricEncryption, directory_load_key_files, SymmetricEncryption,\
-                  encrypt_structure, HexEncoding
+                  encrypt_structure, HexEncoding, compress_dict_or_list
 import os
 from rich.console import Console
 from getpass import getpass
@@ -110,7 +110,7 @@ while True:
                     
                     clear_console()
                     CONSOLE.print("Your generated password is called:", f"[blue]{generated_password}")
-                    input("Press Enter, the password will no longer be displayed:")
+                    input("Press Enter, the password will no longer be displayed: ")
 
                     password = generated_password
                     break
@@ -393,19 +393,37 @@ while True:
                             
                     if not key_file is None:
                         break
+
+        clear_console()
+        print(f"Enter the file or folder path: {path}\n")
+        CONSOLE.print("[green]~ Exploring the file structure... Done")
+        CONSOLE.print("[green]~ Compression of all files... Done")
+        CONSOLE.print("[green]~ Encryption credentials added")
         
-        print("")
         if not password is None:
             with CONSOLE.status("[green]Encrypt the file structure with password..."):
                 symmetric_encryption = SymmetricEncryption(password)
                 structure = encrypt_structure(structure, symmetric_encryption)
+            CONSOLE.print("[green]~ Encrypt the file structure with password... Done")
+            
         if not public_key is None:
             with CONSOLE.status("[green]Encrypt the file structure with public key..."):
                 asymmetric_encryption = AsymmetricEncryption(public_key)
                 structure = encrypt_structure(structure, asymmetric_encryption)
+            CONSOLE.print("[green]~ Encrypt the file structure with public key... Done")
+
         if not key_file is None:
             with CONSOLE.status("[green]Encrypt the file structure with key file..."):
                 symmetric_encryption = SymmetricEncryption(key_file)
                 structure = encrypt_structure(structure, symmetric_encryption)
+            CONSOLE.print("[green]~ Encrypt the file structure with key file... Done")
+
+        with CONSOLE.status("[green]Converting bytes to hex..."):
+            structure = encrypt_structure(structure, HexEncoding)
+        CONSOLE.print("[green]~ Converting bytes to hex... Done")
+        
+        with CONSOLE.status("[green]Minimization of the file structure..."):
+            structure_data = compress_dict_or_list(structure)
+        CONSOLE.print("[green]~ Minimization of the file structure... Done")
                                 
         continue
