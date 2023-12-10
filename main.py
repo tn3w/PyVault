@@ -48,27 +48,12 @@ while True:
         path = input("Enter the file or folder path: ")
         print("")
 
-        with CONSOLE.status("[green]Exploring the file structure..."):
-            if os.path.isfile(path):
-                full_size = os.path.getsize(path)
-                structure = {path: {"size": full_size, "content": None}}
-            else:
-                structure, full_size = get_all_files_of_directory(path)
-            
-        CONSOLE.print("[green]~ Exploring the file structure... Done")
-
-        with CONSOLE.status("[green]Compression of all files..."):
-            structure = compress_structure(structure)
-
         mission = None
         options = ["Password encryption", "Public key encryption", "Password encryption and Public key encryption"]
         selected_option = 0
         while True:
             clear_console()
             print(f"Enter the file or folder path: {path}\n")
-            CONSOLE.print("[green]~ Exploring the file structure... Done")
-            CONSOLE.print("[green]~ Compression of all files... Done")
-            print("")
 
             for i, option in enumerate(options):
                 if i == selected_option:
@@ -95,10 +80,8 @@ while True:
         if mission in [0, 2]:
             while True:
                 clear_console()
-                print(f"Enter the file or folder path: {path}\n")
-                CONSOLE.print("[green]~ Exploring the file structure... Done")
-                CONSOLE.print("[green]~ Compression of all files... Done")
-                print("\nUsing", encryption_method+"\n")
+                print(f"Enter the file or folder path: {path}")
+                print("Using", encryption_method+"\n")
                 inputed_password = getpass("Please enter a strong password: ")
 
                 if inputed_password == "":
@@ -149,10 +132,8 @@ while True:
 
                 while True:
                     clear_console()
-                    print(f"Enter the file or folder path: {path}\n")
-                    CONSOLE.print("[green]~ Exploring the file structure... Done")
-                    CONSOLE.print("[green]~ Compression of all files... Done")
-                    print("\nUsing", encryption_method+"\n")
+                    print(f"Enter the file or folder path: {path}")
+                    print("Using", encryption_method+"\n")
 
                     for i, option in enumerate(options):
                         if i == selected_option:
@@ -175,10 +156,8 @@ while True:
             if public_key is None:
                 while True:
                     clear_console()
-                    print(f"Enter the file or folder path: {path}\n")
-                    CONSOLE.print("[green]~ Exploring the file structure... Done")
-                    CONSOLE.print("[green]~ Compression of all files... Done")
-                    print("\nUsing", encryption_method+"\n")
+                    print(f"Enter the file or folder path: {path}")
+                    print("Using", encryption_method+"\n")
 
                     inputed_public_key_path = input("Please enter the path to the folder / public key file: ")
                     if inputed_public_key_path == "":
@@ -222,9 +201,7 @@ while True:
 
                             while True:
                                 clear_console()
-                                print(f"Enter the file or folder path: {path}\n")
-                                CONSOLE.print("[green]~ Exploring the file structure... Done")
-                                CONSOLE.print("[green]~ Compression of all files... Done")
+                                print(f"Enter the file or folder path: {path}")
                                 print("\nUsing", encryption_method+"\n")
 
                                 for i, option in enumerate(options):
@@ -258,9 +235,8 @@ while True:
         selected_option = 0
         while True:
             clear_console()
-            print(f"Enter the file or folder path: {path}\n")
-            CONSOLE.print("[green]~ Exploring the file structure... Done")
-            CONSOLE.print("[green]~ Compression of all files... Done")
+            print(f"Enter the file or folder path: {path}")
+            print("Using", encryption_method+"\n")
             CONSOLE.print("[green]~ Encryption credentials added")
             print("")
 
@@ -293,9 +269,8 @@ while True:
 
                 while True:
                     clear_console()
-                    print(f"Enter the file or folder path: {path}\n")
-                    CONSOLE.print("[green]~ Exploring the file structure... Done")
-                    CONSOLE.print("[green]~ Compression of all files... Done")
+                    print(f"Enter the file or folder path: {path}")
+                    print("Using", encryption_method+"\n")
                     CONSOLE.print("[green]~ Encryption credentials added")
                     print("")
 
@@ -320,9 +295,8 @@ while True:
             if key_file is None:
                 while True:
                     clear_console()
-                    print(f"Enter the file or folder path: {path}\n")
-                    CONSOLE.print("[green]~ Exploring the file structure... Done")
-                    CONSOLE.print("[green]~ Compression of all files... Done")
+                    print(f"Enter the file or folder path: {path}")
+                    print("Using", encryption_method+"\n")
                     CONSOLE.print("[green]~ Encryption credentials added")
                     print("")
 
@@ -364,9 +338,8 @@ while True:
 
                             while True:
                                 clear_console()
-                                print(f"Enter the file or folder path: {path}\n")
-                                CONSOLE.print("[green]~ Exploring the file structure... Done")
-                                CONSOLE.print("[green]~ Compression of all files... Done")
+                                print(f"Enter the file or folder path: {path}")
+                                print("Using", encryption_method+"\n")
                                 CONSOLE.print("[green]~ Encryption credentials added")
                                 print("")
 
@@ -393,12 +366,23 @@ while True:
                             
                     if not key_file is None:
                         break
-
+        
         clear_console()
-        print(f"Enter the file or folder path: {path}\n")
-        CONSOLE.print("[green]~ Exploring the file structure... Done")
-        CONSOLE.print("[green]~ Compression of all files... Done")
+        print(f"Enter the file or folder path: {path}")
+        print("Using", encryption_method+"\n")
         CONSOLE.print("[green]~ Encryption credentials added")
+
+        with CONSOLE.status("[green]Exploring the file structure..."):
+            if os.path.isfile(path):
+                full_size = os.path.getsize(path)
+                structure = {path: {"size": full_size, "content": None}}
+            else:
+                structure, full_size = get_all_files_of_directory(path)
+        
+        CONSOLE.print("[green]~ Exploring the file structure... Done")
+
+        with CONSOLE.status("[green]Compression of all files..."):
+            structure = compress_structure(structure)
         
         if not password is None:
             with CONSOLE.status("[green]Encrypt the file structure with password..."):
