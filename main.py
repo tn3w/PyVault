@@ -4,7 +4,8 @@ if __name__ != "__main__":
     exit(1)
 
 from utils import clear_console, get_all_files_of_directory, compress_structure, generate_random_string, get_password_strength,\
-                  is_password_safe, directory_load_keys, AsymmetricEncryption, directory_load_key_files
+                  is_password_safe, directory_load_keys, AsymmetricEncryption, directory_load_key_files, SymmetricEncryption,\
+                  encrypt_structure, HexEncoding
 import os
 from rich.console import Console
 from getpass import getpass
@@ -392,6 +393,19 @@ while True:
                             
                     if not key_file is None:
                         break
-
+        
+        print("")
+        if not password is None:
+            with CONSOLE.status("[green]Encrypt the file structure with password..."):
+                symmetric_encryption = SymmetricEncryption(password)
+                structure = encrypt_structure(structure, symmetric_encryption)
+        if not public_key is None:
+            with CONSOLE.status("[green]Encrypt the file structure with public key..."):
+                asymmetric_encryption = AsymmetricEncryption(public_key)
+                structure = encrypt_structure(structure, asymmetric_encryption)
+        if not key_file is None:
+            with CONSOLE.status("[green]Encrypt the file structure with key file..."):
+                symmetric_encryption = SymmetricEncryption(key_file)
+                structure = encrypt_structure(structure, symmetric_encryption)
                                 
         continue
